@@ -22,3 +22,14 @@ jobs:
         BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
         CHAT_ID:   ${{ secrets.CHAT_ID }}
       run: python bot.py
+    - name: Run bot
+      env:
+        BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
+        CHAT_ID:   ${{ secrets.CHAT_ID }}
+      run: python bot.py
+
+    - name: Run analysis
+      env:
+        BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
+        CHAT_ID:   ${{ secrets.CHAT_ID }}
+      run: python run_analysis.py
