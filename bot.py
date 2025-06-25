@@ -3,16 +3,26 @@
 # └─────────────────────────────────────────────┘
 from datetime import datetime
 from telegram import Update
-from telegram.ext import Updater, CommandHandler, CallbackContext
-from stats_manager import weekly_report, stats_command
+# Заменяем Updater на ApplicationBuilder:
+from telegram.ext import (
+    ApplicationBuilder,
+    CommandHandler,
+    CallbackContext,
+)
 from mexc_api import (
     detect_pumps,
     is_ready_to_dump,
     get_klines,
     plot_price_hourly,
-    get_rsi
+    get_rsi,
 )
-from stats_manager import weekly_report  # если нужен еженедельный отчёт
+from stats_manager import stats_command, weekly_report
+
+import os
+BOT_TOKEN = os.environ['BOT_TOKEN']
+
+# ... остальной ваш код (БЛОК 1.1, БЛОК 2, БЛОК 9.1, 9.2 остаются без изменений) ...
+
 
 # Ваш токен от BotFather
 BOT_TOKEN = '7582763149:AAHAart6lfuro8WlEeL7mygTQDNwrgWuF3Y'
@@ -137,26 +147,29 @@ def auto_check(context: CallbackContext):
 # └─────────────────────────────────────────────┘
 def main():
     print("[DEBUG] Bot is starting...")
-    updater = Updater(BOT_TOKEN, use_context=True)
-    dp = updater.dispatcher
+    # Создаём приложение вместо Updater:
+    app = (
+        ApplicationBuilder()
+        .token(BOT_TOKEN)
+        .build()
+    )
 
-    # уже есть эти хендлеры:
-    dp.add_handler(CommandHandler('start', start_bot))
-    dp.add_handler(CommandHandler('check', lambda update, ctx: (
-        auto_check(ctx),
-        update.message.reply_text("✅ Ручная проверка выполнена")
+    # Регистрируем команды точно так же, только в app:
+    app.add_handler(CommandHandler('start', start_bot))
+    app.add_handler(CommandHandler('check', lambda u, c: (
+        auto_check(c),
+        u.message.reply_text("✅ Ручная проверка выполнена")
     )))
-
-    # ← Вставьте эту строку для stats:
-    dp.add_handler(CommandHandler('stats', stats_command))
+    app.add_handler(CommandHandler('stats', stats_command))
 
     print("[DEBUG] Starting polling...")
-    updater.start_polling()
-    updater.idle()
+    app.run_polling()   # вместо updater.start_polling()/idle()
     print("[DEBUG] Bot has stopped.")
+
 # ┌─────────────────────────────────────────────┐
 # │ БЛОК 9.4: Запуск приложения                │
 # └─────────────────────────────────────────────┘
 if __name__ == '__main__':
     main()
+
 
